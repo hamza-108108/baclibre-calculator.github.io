@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حاسبة النقاط المدرسية</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN for charting -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom styles for fonts and scrollbar */
+        body {
+            font-family: 'Inter', sans-serif;
+            direction: rtl; /* Right-to-left for Arabic */
+            text-align: right; /* Align text to the right */
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-light); /* Use CSS variable for theme adaptability */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-color); /* Use CSS variable */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color); /* Use CSS variable */
+        }
+
+        /* Define CSS variables for themes */
+        :root {
+            --primary-color: #4CAF50;
+            --accent-color: #2196F3;
+            --bg-light: #F0F2F5;
+            --bg-dark: #FFFFFF;
+            --text-dark: #333333;
+            --text_light: #FFFFFF; /* Using _ for consistency with original code's variable naming */
+            --error-color: #F44336;
+            --border-color: #E0E0E0;
+            --input-bg: #FFFACD;
+            --button-text-primary: #000000;
+        }
+
+        body.dark-theme { /* Apply dark theme variables when body has this class */
+            --primary-color: #66BB6A;
+            --accent-color: #64B5F6;
+            --bg-light: #1E1E1E;
+            --bg-dark: #2D2D30;
+            --text-dark: #E0E0E0;
+            --text_light: #FFFFFF; /* Using _ for consistency with original code's variable naming */
+            --error-color: #EF5350;
+            --border-color: #444444;
+            --input-bg: #3A3A3A;
+            --button-text-primary: #FFFFFF;
+        }
+
+        /* Apply CSS variables to elements */
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+        }
+        .bg-background-dark {
+            background-color: var(--bg-dark);
+        }
+        .text-text-dark {
+            color: var(--text-dark);
+        }
+        .text-accent-color {
+            color: var(--accent-color);
+        }
+        .border-border-color {
+            border-color: var(--border-color);
+        }
+        .bg-input-bg {
+            background-color: var(--input-bg);
+        }
+        .text-primary-color {
+            color: var(--primary-color);
+        }
+        .text-error-color {
+            color: var(--error-color);
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--button-text-primary);
+        }
+        .btn-primary:hover {
+            background-color: var(--primary-color); /* Tailwind handles hover for classes, but explicit for custom vars */
+            opacity: 0.9;
+        }
+        .btn-accent {
+            background-color: var(--accent-color);
+            color: var(--text_light);
+        }
+        .btn-accent:hover {
+            background-color: var(--accent-color);
+            opacity: 0.9;
+        }
+        input[type="text"] {
+            caret-color: var(--text-dark); /* Cursor color */
+        }
+        select {
+            background-color: var(--input-bg);
+            color: var(--text-dark);
+            border-color: var(--border-color);
+            background-repeat: no-repeat;
+            background-position: right 10px top 50%;
+            background-size: 12px auto;
+            -webkit-appearance: none; /* Remove default arrow on WebKit browsers */
+            -moz-appearance: none;    /* Remove default arrow on Firefox */
+            appearance: none;         /* Remove default arrow */
+        }
+        /* Default dark arrow for light theme */
+        body:not(.dark-theme) select {
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333333%22%20d%3D%22M287%2C197.3L159.2%2C69.5c-3.2-3.2-8.3-3.2-11.5%2C0L5.4%2C197.3c-3.2%2C3.2-3.2%2C8.3%2C0%2C11.5l15.3%2C15.3c3.2%2C3.2%2C8.3%2C3.2%2C11.5%2C0l118.8-118.8l118.8%2C118.8c3.2%2C3.2%2C8.3%2C3.2%2C11.5%2C0l15.3-15.3C290.2%2C205.6%2C290.2%2C200.5%2C287%2C197.3z%22%2F%3E%3C%2Fsvg%3E');
+        }
+        /* Light arrow for dark theme */
+        body.dark-theme select {
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23E0E0E0%22%20d%3D%22M287%2C197.3L159.2%2C69.5c-3.2-3.2-8.3-3.2-11.5%2C0L5.4%2C197.3c-3.2%2C3.2-3.2%2C8.3%2C0%2C11.5l15.3%2C15.3c3.2%2C3.2%2C8.3%2C3.2%2C11.5%2C0l118.8-118.8l118.8%2C118.8c3.2%2C3.2%2C8.3%2C3.2%2C11.5%2C0l15.3-15.3C290.2%2C205.6%2C290.2%2C200.5%2C287%2C197.3z%22%2F%3E%3C%2Fsvg%3E');
+        }
+
+
+        /* Custom message box for errors/alerts */
+        #customMessageBox {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            background-color: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            gap: 1rem;
+        }
+        #customMessageBox p {
+            color: var(--text-dark);
+            font-size: 1.125rem; /* text-lg */
+            margin-bottom: 0.5rem;
+        }
+        #customMessageBox button {
+            background-color: var(--accent-color);
+            color: var(--text_light);
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        #customMessageBox button:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center min-h-screen p-4 transition-colors duration-300 ease-in-out">
+
+    <!-- Sidebar Toggle Button -->
+    <button id="sidebarToggle" class="fixed top-4 left-4 z-[1001] p-2 rounded-full shadow-lg bg-accent-color text-white focus:outline-none focus:ring-2 focus:ring-accent-color transition-colors duration-300 ease-in-out">
+        <!-- SVG Icon for Menu (Phosphor Icons - Menu) -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 256 256" fill="currentColor">
+            <path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM216,184H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"></path>
+        </svg>
+    </button>
+
+    <!-- Sidebar (visually on the right in RTL, slides from right) -->
+    <div id="sidebar" class="fixed top-0 right-[-256px] h-full w-64 bg-background-dark p-6 rounded-lg shadow-xl border border-border-color z-50 transition-all duration-300 ease-in-out flex flex-col">
+        <h2 class="text-xl font-semibold text-accent-color mb-4 border-b border-border-color pb-2">للتواصل</h2>
+        <p class="text-text-dark text-lg mb-2">البريد الإلكتروني:</p>
+        <p class="text-text-dark text-md break-words">red444red444red444red@gmail.com</p>
+    </div>
+
+    <!-- Main content wrapper - no margin needed as sidebar is overlaying -->
+    <div class="flex flex-col items-center w-full">
+        <div id="app-container" class="w-full max-w-2xl bg-background-dark p-6 rounded-lg shadow-xl border border-border-color">
+            <h1 class="text-3xl font-bold text-center mb-2 text-accent-color">حساب نقط المترشحين الأحرار</h1>
+            <p id="specializationDisplay" class="text-lg text-center mb-6 text-text-dark">لشعبة مسلك الاقتصاد و التدبير</p>
+
+            <!-- Specialization Selection -->
+            <div class="flex flex-col items-center justify-center mb-4">
+                <label for="specializationSelect" class="text-text-dark text-lg mb-2">اختر الشعبة:</label>
+                <select id="specializationSelect" class="p-2 rounded-md border border-border-color bg-input-bg text-text-dark focus:outline-none focus:ring-2 focus:ring-accent-color w-64">
+                    <option value="economy_management">مسلك الاقتصاد و التدبير</option>
+                    <option value="accounting_management">مسلك التدبير المحاسباتي</option>
+                    <option value="authentic_arabic_language">مسلك التعليم الأصيل</option>
+                    <option value="authentic_religious_sciences">مسلك العلوم الشرعية</option>
+                    <option value="arts_track">مسلك الآداب</option>
+                    <option value="humanities_track">مسلك العلوم الإنسانية</option>
+                    <option value="physics_chemistry_track">مسلك الفيزياء والكيمياء</option>
+                    <option value="life_earth_sciences_track">مسلك علوم الحياة والأرض</option>
+                    <option value="math_sciences_a_track">مسلك العلوم الرياضية - أ</option>
+                    <option value="math_sciences_b_track">مسلك العلوم الرياضية - ب</option>
+                </select>
+            </div>
+
+            <!-- Theme Toggle Button -->
+            <div class="flex justify-end mb-4">
+                <button id="themeToggle" class="btn-accent px-4 py-2 rounded-lg transition-colors duration-300 ease-in-out">
+                    تبديل الوضع (فاتح/داكن)
+                </button>
+            </div>
+
+            <!-- Regional Subjects Section -->
+            <div class="mb-8 p-4 rounded-lg bg-background-dark border border-border-color shadow-md">
+                <h2 class="text-xl font-semibold text-accent-color mb-4 border-b border-border-color pb-2">الامتحان الجهوي (25%)</h2>
+                <div id="regional-subjects-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Subject inputs will be populated here by JavaScript -->
+                </div>
+            </div>
+
+            <!-- National Subjects Section -->
+            <div class="mb-8 p-4 rounded-lg bg-background-dark border border-border-color shadow-md">
+                <h2 class="text-xl font-semibold text-accent-color mb-4 border-b border-border-color pb-2">الامتحان الوطني (75%)</h2>
+                <div id="national-subjects-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Subject inputs will be populated here by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Physical Education Section -->
+            <div class="mb-8 p-4 rounded-lg bg-background-dark border border-border-color shadow-md">
+                <h2 class="text-xl font-semibold text-accent-color mb-4 border-b border-border-color pb-2">التربية البدنية (معامل)</h2>
+                <div class="flex items-center justify-between gap-2">
+                    <label for="input-physical-education" class="text-text-dark text-sm md:text-base">نقطة التربية البدنية:</label>
+                    <input type="text" id="input-physical-education" class="w-20 p-2 rounded-md border border-border-color bg-input-bg text-text-dark focus:outline-none focus:ring-2 focus:ring-accent-color transition-colors duration-200" placeholder="أدخل النقطة" inputmode="decimal">
+                </div>
+                <div class="flex items-center mt-4">
+                    <input type="checkbox" id="exempt-physical-education" class="form-checkbox h-5 w-5 text-accent-color rounded focus:ring-accent-color transition-colors duration-200">
+                    <label for="exempt-physical-education" class="ml-2 text-text-dark">إعفاء من الرياضة</label>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row justify-center gap-4 mb-8">
+                <button id="calculateButton" class="btn-primary px-6 py-3 rounded-lg font-bold text-lg shadow-md transition-all duration-200 hover:scale-105">
+                    احسب النتيجة الإجمالية
+                </button>
+                <button id="clearButton" class="btn-accent px-6 py-3 rounded-lg font-semibold shadow-md transition-all duration-200 hover:scale-105">
+                    مسح الكل
+                </button>
+            </div>
+
+            <!-- Results Section -->
+            <div class="mb-8 p-4 rounded-lg bg-background-dark border border-border-color shadow-md">
+                <h2 class="text-xl font-semibold text-accent-color mb-4 border-b border-border-color pb-2">النتائج</h2>
+                <div class="grid grid-cols-2 gap-4 text-lg">
+                    <div class="text-text-dark">معدل الامتحان الجهوي:</div>
+                    <div id="regionalResult" class="font-bold text-right text-text-dark">- / 20</div>
+
+                    <div class="text-text-dark">معدل الامتحان الوطني:</div>
+                    <div id="nationalResult" class="font-bold text-right text-text-dark">- / 20</div>
+
+                    <div class="text-text-dark">المعدل العام النهائي:</div>
+                    <div id="finalGrade" class="font-bold text-right text-text-dark">- / 20</div>
+                </div>
+                <div id="passFailStatus" class="mt-4 text-2xl font-bold text-center"></div>
+            </div>
+
+            <!-- Chart Section -->
+            <div class="p-4 rounded-lg bg-background-dark border border-border-color shadow-md">
+                <h2 class="text-xl font-semibold text-accent-color mb-4 border-b border-border-color pb-2">مبيان النقاط</h2>
+                <div class="chart-container relative h-64 w-full">
+                    <canvas id="gradeChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Message Box HTML -->
+    <div id="customMessageBox" class="hidden">
+        <p id="messageBoxText"></p>
+        <button id="messageBoxCloseButton">إغلاق</button>
+    </div>
+
+    <script>
+        // Define constants and subject data
+        const PASSING_GRADE = 10.0; // The minimum grade required to pass
+
+        // Theme color definitions for light mode
+        const LIGHT_THEME_COLORS = {
+            primary: "#4CAF50",
+            accent: "#2196F3",
+            background_light: "#F0F2F5",
+            background_dark: "#FFFFFF",
+            text_dark: "#333333",
+            text_light: "#FFFFFF", // Text color for light-on-dark elements
+            error: "#F44336",
+            border: "#E0E0E0",
+            input_bg: "#FFFACD",
+            button_text_primary: "#000000"
+        };
+
+        // Theme color definitions for dark mode
+        const DARK_THEME_COLORS = {
+            primary: "#66BB6A",
+            accent: "#64B5F6",
+            background_light: "#1E1E1E",
+            background_dark: "#2D2D30",
+            text_dark: "#E0E0E0",
+            text_light: "#FFFFFF", // Text color for light-on-dark elements
+            error: "#EF5350",
+            border: "#444444",
+            input_bg: "#3A3A3A",
+            button_text_primary: "#FFFFFF"
+        };
+
+        let currentColors = { ...LIGHT_THEME_COLORS }; // Initialize with light theme colors
+        let currentThemeName = "light"; // Track the current theme name
+
+        // Define subject coefficients for each specialization
+        // This data structure holds all the subjects and their respective coefficients
+        // for both regional and national exams, categorized by specialization.
+        const specializationsData = {
+            "economy_management": {
+                name: "الاقتصاد و التدبير",
+                regional: {
+                    "اللغة العربية": 2,
+                    "اللغة الفرنسية": 3,
+                    "التربية الاسلامية": 2,
+                    "التاريخ و الجغرافيا": 3,
+                    "القانون": 1,
+                    "معلوميات التدبير": 1
+                },
+                national: {
+                    "الرياضيات": 4,
+                    "المحاسبة و الرياضيات المالية": 4,
+                    "الاقتصاد العام و الاحصاء": 6,
+                    "الاقتصاد و التنظيم الاداري للمقاولات": 3,
+                    "الفلسفة": 2,
+                    "اللغة الانجليزية": 2
+                },
+                physical_education: { "التربية البدنية": 1 }
+            },
+            "accounting_management": {
+                name: "التدبير المحاسباتي",
+                regional: {
+                    "اللغة العربية": 2,
+                    "اللغة الفرنسية": 3,
+                    "التربية الاسلامية": 2,
+                    "التاريخ و الجغرافيا": 2,
+                    "القانون": 1,
+                    "معلوميات التدبير": 1
+                },
+                national: {
+                    "الرياضيات": 4,
+                    "المحاسبة و الرياضيات المالية": 6,
+                    "الاقتصاد العام و الاحصاء": 3,
+                    "الاقتصاد و التنظيم الاداري للمقاولات": 3,
+                    "الفلسفة": 2,
+                    "اللغة الانجليزية": 2
+                },
+                physical_education: { "التربية البدنية": 1 }
+            },
+            "authentic_arabic_language": {
+                name: "التعليم الأصيل",
+                regional: {
+                    "الرياضيات": 1,
+                    "اللغة الأجنبية الأولى": 3,
+                    "الاجتماعيات": 3,
+                    "التوثيق": 1
+                },
+                national: {
+                    "علوم اللغة": 4,
+                    "الأدب": 5,
+                    "التفسير والحديث": 4,
+                    "اللغة الأجنبية الثانية": 2,
+                    "الفلسفة": 2
+                },
+                physical_education: { "التربية البدنية": 1 }
+            },
+            "authentic_religious_sciences": {
+                name: "العلوم الشرعية",
+                regional: {
+                    "اللغة الأجنبية الأولى": 3,
+                    "الاجتماعيات": 2,
+                    "علوم اللغة": 2,
+                    "الفرائض والتوقيت": 2,
+                    "الرياضيات": 1,
+                    "التوثيق": 1
+                },
+                national: {
+                    "الأدب": 4,
+                    "التفسير والحديث": 5,
+                    "الفقه والأصول": 5,
+                    "اللغة الأجنبية الثانية": 2,
+                    "الفلسفة": 2
+                },
+                physical_education: { "التربية البدنية": 1 }
+            },
+            "arts_track": {
+                name: "مسلك الآداب",
+                regional: {
+                    "اللغة الأجنبية الأولى": 4,
+                    "الرياضيات": 1,
+                    "التربية الإسلامية": 2
+                },
+                national: {
+                    "اللغة العربية وآدابها": 4,
+                    "اللغة الأجنبية الثانية": 4,
+                    "التاريخ والجغرافيا": 3,
+                    "الفلسفة": 3
+                },
+                physical_education: { "التربية البدنية": 1 }
+            },
+            "humanities_track": {
+                name: "مسلك العلوم الإنسانية",
+                regional: {
+                    "اللغة الأجنبية الأولى": 4,
+                    "الرياضيات": 1,
+                    "التربية الإسلامية": 2
+                },
+                national: {
+                    "اللغة العربية وآدابها": 3,
+                    "اللغة الأجنبية الثانية": 3,
+                    "التاريخ والجغرافيا": 4,
+                    "الفلسفة": 4
+                },
+                physical_education: { "التربية البدنية": 1 }
+            },
+            "physics_chemistry_track": {
+                name: "مسلك الفيزياء والكيمياء",
+                regional: {
+                    "اللغة العربية": 2,
+                    "اللغة الأجنبية الأولى": 4,
+                    "التربية الإسلامية": 2,
+                    "التاريخ والجغرافيا": 2,
+                    "الترجمة": 2
+                },
+                national: {
+                    "الرياضيات": 7,
+                    "الفيزياء والكيمياء": 7,
+                    "علوم الحياة والأرض": 5,
+                    "الفلسفة": 2,
+                    "اللغة الأجنبية الثانية": 2
+                },
+                physical_education: { "التربية البدنية": 1 }
+            },
+            "life_earth_sciences_track": {
+                name: "مسلك علوم الحياة والأرض",
+                regional: {
+                    "اللغة العربية": 2,
+                    "اللغة الأجنبية الأولى": 4,
+                    "التربية الإسلامية": 2,
+                    "التاريخ والجغرافيا": 2,
+                    "الترجمة": 2
+                },
+                national: {
+                    "الرياضيات": 7,
+                    "الفيزياء والكيمياء": 5,
+                    "علوم الحياة والأرض": 7,
+                    "الفلسفة": 2,
+                    "اللغة الأجنليزية الثانية": 2
+                },
+                physical_education: { "التربية البدنية": 1 }
+            },
+            "math_sciences_a_track": {
+                name: "مسلك العلوم الرياضية - أ",
+                regional: {
+                    "اللغة العربية": 2,
+                    "اللغة الأجنبية الأولى": 4,
+                    "التربية الإسلامية": 2,
+                    "التاريخ و الجغرافيا": 2,
+                    "الترجمة": 2
+                },
+                national: {
+                    "الرياضيات": 9,
+                    "الفيزياء والكيمياء": 7,
+                    "علوم الحياة والأرض": 3,
+                    "الفلسفة": 2,
+                    "اللغة الأجنبية الثانية": 2
+                },
+                physical_education: { "التربية البدنية": 1 }
+            },
+            "math_sciences_b_track": {
+                name: "مسلك العلوم الرياضية - ب",
+                regional: {
+                    "اللغة العربية": 2,
+                    "اللغة الأجنبية الأولى": 4,
+                    "التربية الإسلامية": 2,
+                    "التاريخ و الجغرافيا": 2,
+                    "الترجمة": 2
+                },
+                national: {
+                    "الرياضيات": 9,
+                    "الفيزياء والكيمياء": 7,
+                    "علوم المهندس": 3,
+                    "الفلسفة": 2,
+                    "اللغة الأجنبية الثانية": 2
+                },
+                physical_education: { "التربية البدنية": 1 }
+            }
+        };
+
+        // Prepend "مسلك " to specialization names if not already present
+        for (const key in specializationsData) {
+            if (specializationsData.hasOwnProperty(key)) {
+                const specialization = specializationsData[key];
+                if (!specialization.name.startsWith("مسلك ")) {
+                    specialization.name = "مسلك " + specialization.name;
+                }
+            }
+        }
+
+
+        let currentSpecialization = 'economy_management'; // Default specialization
+
+        // DOM Elements
+        const appContainer = document.getElementById('app-container');
+        const specializationSelect = document.getElementById('specializationSelect');
+        const specializationDisplay = document.getElementById('specializationDisplay');
+        const themeToggle = document.getElementById('themeToggle');
+        const regionalSubjectsContainer = document.getElementById('regional-subjects-container');
+        const nationalSubjectsContainer = document.getElementById('national-subjects-container');
+        const calculateButton = document.getElementById('calculateButton');
+        const clearButton = document.getElementById('clearButton');
+        const regionalResultDisplay = document.getElementById('regionalResult');
+        const nationalResultDisplay = document.getElementById('nationalResult');
+        const finalGradeDisplay = document.getElementById('finalGrade');
+        const passFailStatusDisplay = document.getElementById('passFailStatus');
+        const gradeChartCanvas = document.getElementById('gradeChart');
+
+        // Input entry storage (will be dynamically updated)
+        const regionalScoreEntries = {};
+        const nationalScoreEntries = {};
+
+        // Chart.js instance
+        let gradeChart;
+
+        // Custom Message Box elements
+        const customMessageBox = document.getElementById('customMessageBox');
+        const messageBoxText = document.getElementById('messageBoxText');
+        const messageBoxCloseButton = document.getElementById('messageBoxCloseButton');
+
+        // Sidebar elements
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+
+
+        /**
+         * Displays a custom message box with the given message.
+         * @param {string} message - The message to display.
+         */
+        function showMessageBox(message) {
+            messageBoxText.textContent = message;
+            customMessageBox.style.display = 'flex';
+        }
+
+        // Event listener for closing the message box
+        messageBoxCloseButton.addEventListener('click', () => {
+            customMessageBox.style.display = 'none';
+        });
+
+        /**
+         * Populates the subject input fields based on the currently selected specialization.
+         * Clears previous entries and creates new input fields with labels and coefficients.
+         */
+        function populateSubjectEntries() {
+            const currentRegionalSubjects = specializationsData[currentSpecialization].regional;
+            const currentNationalSubjects = specializationsData[currentSpecialization].national;
+
+            // Clear previous entries and their references
+            regionalSubjectsContainer.innerHTML = '';
+            nationalSubjectsContainer.innerHTML = '';
+            for (const key in regionalScoreEntries) { delete regionalScoreEntries[key]; }
+            for (const key in nationalScoreEntries) { delete nationalScoreEntries[key]; }
+
+            // Populate regional subjects
+            Object.entries(currentRegionalSubjects).forEach(([subject, coeff]) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between gap-2';
+
+                const label = document.createElement('label');
+                label.className = 'text-text-dark text-sm md:text-base';
+                label.textContent = `${subject} (معامل ${coeff}):`;
+                label.htmlFor = `input-regional-${subject.replace(/\s/g, '-')}`; // Unique ID for input
+
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.id = `input-regional-${subject.replace(/\s/g, '-')}`;
+                input.className = 'w-24 p-2 rounded-md border border-border-color bg-input-bg text-text-dark focus:outline-none focus:ring-2 focus:ring-accent-color transition-colors duration-200';
+                input.placeholder = 'أدخل النقطة';
+                input.setAttribute('inputmode', 'decimal'); // Optimize for numeric input on mobile
+
+                div.appendChild(label);
+                div.appendChild(input);
+                regionalSubjectsContainer.appendChild(div);
+
+                regionalScoreEntries[subject] = input; // Store reference to the input element
+            });
+
+            // Populate national subjects
+            Object.entries(currentNationalSubjects).forEach(([subject, coeff]) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between gap-2';
+
+                const label = document.createElement('label');
+                label.className = 'text-text-dark text-sm md:text-base';
+                label.textContent = `${subject} (معامل ${coeff}):`;
+                label.htmlFor = `input-national-${subject.replace(/\s/g, '-')}`; // Unique ID for input
+
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.id = `input-national-${subject.replace(/\s/g, '-')}`;
+                input.className = 'w-24 p-2 rounded-md border border-border-color bg-input-bg text-text-dark focus:outline-none focus:ring-2 focus:ring-accent-color transition-colors duration-200';
+                input.placeholder = 'أدخل النقطة';
+                input.setAttribute('inputmode', 'decimal'); // Optimize for numeric input on mobile
+
+                div.appendChild(label);
+                div.appendChild(input);
+                nationalSubjectsContainer.appendChild(div);
+
+                nationalScoreEntries[subject] = input; // Store reference to the input element
+            });
+
+            // Apply current theme colors to newly created elements
+            applyTheme();
+        }
+
+        /**
+         * Calculates the weighted average of scores based on provided score inputs and coefficients.
+         * Displays error messages if inputs are invalid or out of range (0-20).
+         * @param {Object} scoresDict - An object mapping subject names to their input elements.
+         * @param {Object} coeffsDict - An object mapping subject names to their coefficients.
+         * @returns {{avg: number|null, totalCoeffs: number|null}} An object containing the average and total coefficients, or null if an error occurred.
+         */
+        function calculateWeightedAverage(scoresDict, coeffsDict) {
+            let totalWeightedScore = 0;
+            let totalCoeffs = 0;
+            for (const subject in scoresDict) {
+                const scoreInput = scoresDict[subject];
+                const score = parseFloat(scoreInput.value);
+                const coeff = coeffsDict[subject];
+
+                // Validate input: check if empty
+                if (scoreInput.value.trim() === '') {
+                    showMessageBox(`الرجاء إدخال نقطة لمادة '${subject}'.`);
+                    return { avg: null, totalCoeffs: null };
+                }
+                // Validate input: check if not a number
+                if (isNaN(score)) {
+                    showMessageBox(`الرجاء إدخال قيمة رقمية صالحة لنقطة مادة '${subject}'.`);
+                    return { avg: null, totalCoeffs: null };
+                }
+                // Validate input: check if within range (0-20)
+                if (score < 0 || score > 20) {
+                    showMessageBox(`نقطة مادة '${subject}' يجب أن تكون بين 0 و 20.`);
+                    return { avg: null, totalCoeffs: null };
+                }
+
+                totalWeightedScore += score * coeff;
+                totalCoeffs += coeff;
+            }
+
+            // Handle case where there are no subjects or coefficients
+            if (totalCoeffs === 0) {
+                return { avg: 0, totalCoeffs: 0 };
+            }
+
+            const average = totalWeightedScore / totalCoeffs;
+            return { avg: average, totalCoeffs: totalCoeffs };
+        }
+
+        /**
+         * Calculates the final overall grade based on regional and national exam averages,
+         * and includes the physical education score if not exempted.
+         * Updates the display with regional, national, and final grades, and pass/fail status.
+         * Also updates the grade chart.
+         */
+        function calculateFinalGrade() {
+            const currentRegionalSubjects = specializationsData[currentSpecialization].regional;
+            const currentNationalSubjects = specializationsData[currentSpecialization].national;
+            const peSubjectData = specializationsData[currentSpecialization].physical_education;
+
+            const regionalResult = calculateWeightedAverage(regionalScoreEntries, currentRegionalSubjects);
+            if (regionalResult.avg === null) return;
+
+            const nationalResult = calculateWeightedAverage(nationalScoreEntries, currentNationalSubjects);
+            if (nationalResult.avg === null) return;
+
+            const regionalAvg = regionalResult.avg;
+            const nationalAvg = nationalResult.avg;
+
+            regionalResultDisplay.textContent = `${regionalAvg.toFixed(2)} / 20`;
+            nationalResultDisplay.textContent = `${nationalAvg.toFixed(2)} / 20`;
+
+            let peScore = 0;
+            const peCoeff = peSubjectData["التربية البدنية"]; // Coefficient for Physical Education (should be 1)
+            const peInput = document.getElementById('input-physical-education');
+            const peExempt = document.getElementById('exempt-physical-education').checked;
+
+            // Base weighted sum from regional (25%) and national (75%) exams
+            let totalWeightedSum = (nationalAvg * 75) + (regionalAvg * 25);
+            let totalWeightUnits = 100; // Total weight for regional and national components
+
+            // Include Physical Education score if not exempted
+            if (!peExempt) {
+                const inputPEDisplayValue = peInput.value.trim();
+                if (inputPEDisplayValue === '') {
+                    showMessageBox(`الرجاء إدخال نقطة لمادة 'التربية البدنية'.`);
+                    return;
+                }
+                peScore = parseFloat(inputPEDisplayValue);
+                if (isNaN(peScore) || peScore < 0 || peScore > 20) {
+                    showMessageBox(`نقطة مادة 'التربية البدنية' يجب أن تكون قيمة رقمية بين 0 و 20.`);
+                    return;
+                }
+                totalWeightedSum += (peScore * peCoeff); // Add PE score weighted by its coefficient
+                totalWeightUnits += peCoeff; // Add PE coefficient to total weight units
+            }
+
+            // Calculate the final overall grade
+            const finalGrade = totalWeightedSum / totalWeightUnits;
+            finalGradeDisplay.textContent = `${finalGrade.toFixed(2)} / 20`;
+
+            // Determine and display pass/fail status
+            if (finalGrade >= PASSING_GRADE) {
+                passFailStatusDisplay.textContent = "ناجح";
+                passFailStatusDisplay.style.color = currentColors.primary;
+                finalGradeDisplay.style.color = currentColors.primary;
+            } else {
+                passFailStatusDisplay.textContent = "راسب";
+                passFailStatusDisplay.style.color = currentColors.error;
+                finalGradeDisplay.style.color = currentColors.error;
+            }
+
+            // Update the chart with the new grades
+            updateGradeChart(regionalAvg, nationalAvg, finalGrade);
+        }
+
+        /**
+         * Clears all input fields and resets the displayed results and chart.
+         */
+        function clearAllEntries() {
+            // Clear all regional subject input fields
+            Object.values(regionalScoreEntries).forEach(input => input.value = '');
+            // Clear all national subject input fields
+            Object.values(nationalScoreEntries).forEach(input => input.value = '');
+
+            // Clear Physical Education input and reset exemption checkbox
+            document.getElementById('input-physical-education').value = '';
+            document.getElementById('exempt-physical-education').checked = false;
+
+            // Reset result displays to default
+            regionalResultDisplay.textContent = "- / 20";
+            nationalResultDisplay.textContent = "- / 20";
+            finalGradeDisplay.textContent = "- / 20";
+            passFailStatusDisplay.textContent = ""; // Clear pass/fail status
+
+            // Reset text colors to default
+            regionalResultDisplay.style.color = currentColors.text_dark;
+            nationalResultDisplay.style.color = currentColors.text_dark;
+            finalGradeDisplay.style.color = currentColors.text_dark;
+            passFailStatusDisplay.style.color = currentColors.text_dark;
+
+            // Reset the chart to show empty data
+            updateGradeChart(0, 0, 0);
+        }
+
+        /**
+         * Applies the current theme colors to various elements on the page.
+         * This function is called when the theme is toggled or when new elements are added.
+         */
+        function applyTheme() {
+            // Toggle the dark-theme class on the body element
+            if (currentThemeName === "dark") {
+                document.body.classList.add('dark-theme');
+                currentColors = { ...DARK_THEME_COLORS }; // Set current colors to dark theme
+            } else {
+                document.body.classList.remove('dark-theme');
+                currentColors = { ...LIGHT_THEME_COLORS }; // Set current colors to light theme
+            }
+
+            // Update theme toggle button colors
+            themeToggle.style.backgroundColor = currentColors.accent;
+            themeToggle.style.color = currentColors.text_light;
+
+            // Update specialization select colors
+            specializationSelect.style.backgroundColor = currentColors.input_bg;
+            specializationSelect.style.color = currentColors.text_dark;
+            specializationSelect.style.borderColor = currentColors.border;
+
+            // Re-apply colors to dynamically created elements (labels and inputs for regional/national)
+            [regionalSubjectsContainer, nationalSubjectsContainer].forEach(container => {
+                Array.from(container.children).forEach(div => {
+                    const label = div.querySelector('label');
+                    const input = div.querySelector('input');
+                    if (label) {
+                        label.style.color = currentColors.text_dark;
+                    }
+                    if (input) {
+                        input.style.backgroundColor = currentColors.input_bg;
+                        input.style.color = currentColors.text_dark;
+                        input.style.borderColor = currentColors.border;
+                        input.style.caretColor = currentColors.text_dark;
+                    }
+                });
+            });
+
+            // Apply colors to Physical Education elements
+            const peInput = document.getElementById('input-physical-education');
+            const peExemptLabel = document.querySelector('label[for="exempt-physical-education"]');
+            const peCheckbox = document.getElementById('exempt-physical-education');
+
+            if (peInput) {
+                peInput.style.backgroundColor = currentColors.input_bg;
+                peInput.style.color = currentColors.text_dark;
+                peInput.style.borderColor = currentColors.border;
+                peInput.style.caretColor = currentColors.text_dark;
+            }
+            if (peExemptLabel) {
+                peExemptLabel.style.color = currentColors.text_dark;
+            }
+            if (peCheckbox) {
+                peCheckbox.style.borderColor = currentColors.border;
+                // Tailwind's form-checkbox handles the background/checkmark color based on text-accent-color
+            }
+
+            // Apply colors to sidebar elements
+            if (sidebar) {
+                sidebar.style.backgroundColor = currentColors.background_dark;
+                sidebar.style.borderColor = currentColors.border;
+                const sidebarH2 = sidebar.querySelector('h2');
+                const sidebarP = sidebar.querySelector('p');
+                const sidebarEmailP = sidebar.querySelectorAll('p')[1]; // Get the second p tag for email
+
+                if (sidebarH2) { sidebarH2.style.color = currentColors.accent; }
+                if (sidebarP) { sidebarP.style.color = currentColors.text_dark; }
+                if (sidebarEmailP) { sidebarEmailP.style.color = currentColors.text_dark; }
+            }
+
+            // Apply colors to sidebar toggle button
+            if (sidebarToggle) {
+                sidebarToggle.style.backgroundColor = currentColors.accent;
+                sidebarToggle.style.color = currentColors.text_light; // For SVG icon fill/stroke
+            }
+
+            // Re-apply colors to result displays.
+            regionalResultDisplay.style.color = currentColors.text_dark;
+            nationalResultDisplay.style.color = currentColors.text_dark;
+            if (passFailStatusDisplay.textContent === "") { // Only if no status is set (initial state)
+                finalGradeDisplay.style.color = currentColors.text_dark;
+                passFailStatusDisplay.style.color = currentColors.text_dark;
+            } else { // If status is set (after calculation), re-evaluate to apply correct color
+                calculateFinalGrade(); // This will apply the correct primary/error color based on value
+            }
+
+            // Update chart colors if the chart instance exists
+            if (gradeChart) {
+                // Update chart options that depend on theme colors
+                gradeChart.options.scales.y.ticks.color = currentColors.text_dark;
+                gradeChart.options.scales.x.ticks.color = currentColors.text_dark;
+                gradeChart.options.plugins.title.color = currentColors.text_dark;
+                gradeChart.options.plugins.tooltip.backgroundColor = currentColors.background_dark;
+                gradeChart.options.plugins.tooltip.borderColor = currentColors.border;
+                gradeChart.options.plugins.tooltip.titleColor = currentColors.text_dark;
+                gradeChart.options.plugins.tooltip.bodyColor = currentColors.text_dark;
+                gradeChart.options.plugins.tooltip.callbacks.labelTextColor = function(context) {
+                    return currentColors.text_dark;
+                };
+                gradeChart.options.plugins.tooltip.callbacks.titleColor = function(context) {
+                    return currentColors.text_dark;
+                };
+
+                // Update bar colors in dataset
+                gradeChart.data.datasets[0].backgroundColor = [
+                    currentColors.accent,
+                    currentColors.accent,
+                    currentColors.primary
+                ];
+                gradeChart.data.datasets[0].borderColor = [
+                    currentColors.accent,
+                    currentColors.accent,
+                    currentColors.primary
+                ];
+
+                gradeChart.update(); // Re-render the chart with new colors
+            }
+        }
+
+        /**
+         * Toggles the current theme between "light" and "dark" and applies the new theme.
+         */
+        function toggleTheme() {
+            currentThemeName = currentThemeName === "light" ? "dark" : "light";
+            applyTheme();
+        }
+
+        /**
+         * Updates the Chart.js graph with new grade data.
+         * Destroys the old chart instance and creates a new one to apply changes.
+         * @param {number} regionalAvg - The average regional grade.
+         * @param {number} nationalAvg - The average national grade.
+         * @param {number} finalGrade - The final overall grade.
+         */
+        function updateGradeChart(regionalAvg, nationalAvg, finalGrade) {
+            const ctx = gradeChartCanvas.getContext('2d');
+
+            // Destroy existing chart instance if it exists to prevent memory leaks and redraw issues
+            if (gradeChart) {
+                gradeChart.destroy();
+            }
+
+            // Create a new Chart.js instance with updated data and theme-dependent options
+            gradeChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['جهوي', 'وطني', 'نهائي'], // Labels for the bars (Regional, National, Final)
+                    datasets: [{
+                        label: 'النقطة / 20', // Label for the dataset
+                        data: [regionalAvg, nationalAvg, finalGrade], // Data points for the bars
+                        backgroundColor: [
+                            currentColors.accent, // Color for regional and national bars
+                            currentColors.accent,
+                            currentColors.primary // Color for the final grade bar
+                        ],
+                        borderColor: [
+                            currentColors.accent, // Border color for regional and national bars
+                            currentColors.accent,
+                            currentColors.primary // Border color for the final grade bar
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true, // Make the chart responsive to container size
+                    maintainAspectRatio: false, // Do not maintain aspect ratio, allow flexible sizing
+                    scales: {
+                        y: {
+                            beginAtZero: true, // Start Y-axis at zero
+                            max: 20, // Maximum value for Y-axis (grades are out of 20)
+                            ticks: {
+                                color: currentColors.text_dark // Y-axis tick color (adapts to theme)
+                            },
+                            grid: {
+                                color: currentColors.border // Y-axis grid color (adapts to theme)
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: currentColors.text_dark // X-axis tick color (adapts to theme)
+                            },
+                            grid: {
+                                color: currentColors.border // X-axis grid color (adapts to theme)
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'مقارنة النقاط', // Chart title
+                            color: currentColors.text_dark, // Title color (adapts to theme)
+                            font: {
+                                size: 18,
+                                family: 'Inter' // Font family for the title
+                            }
+                        },
+                        legend: {
+                            display: false // Hide the legend as it's not strictly necessary for this chart
+                        },
+                        tooltip: {
+                            backgroundColor: currentColors.background_dark, // Tooltip background color (adapts to theme)
+                            borderColor: currentColors.border, // Tooltip border color (adapts to theme)
+                            borderWidth: 1,
+                            titleColor: currentColors.text_dark, // Tooltip title color (adapts to theme)
+                            bodyColor: currentColors.text_dark, // Tooltip body color (adapts to theme)
+                            callbacks: {
+                                // Custom callback to format the tooltip label
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y.toFixed(2); // Display grade with 2 decimal places
+                                    }
+                                    return label;
+                                },
+                                // Custom callback to set tooltip label text color
+                                labelTextColor: function(context) {
+                                    return currentColors.text_dark; // Ensure label text color is correct for theme
+                                },
+                                // Custom callback to set tooltip title text color
+                                titleColor: function(context) {
+                                    return currentColors.text_dark; // Ensure title text color is correct for theme
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- Event Listeners ---
+
+        // Event listener for specialization selection change
+        specializationSelect.addEventListener('change', (event) => {
+            currentSpecialization = event.target.value; // Update current specialization
+            specializationDisplay.textContent = `لشعبة ${specializationsData[currentSpecialization].name}`; // Update display text
+            populateSubjectEntries(); // Re-populate subjects for the new specialization
+            clearAllEntries(); // Clear results and chart when specialization changes
+        });
+
+        // Event listener for calculate button click
+        calculateButton.addEventListener('click', calculateFinalGrade);
+
+        // Event listener for clear button click
+        clearButton.addEventListener('click', clearAllEntries);
+
+        // Event listener for theme toggle button click
+        themeToggle.addEventListener('click', toggleTheme);
+
+        // Event listener for sidebar toggle button click
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('right-[-256px]');
+            sidebar.classList.toggle('right-0');
+        });
+
+
+        // --- Initial Setup on Page Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            populateSubjectEntries(); // Populate subjects on initial load
+            updateGradeChart(0, 0, 0); // Initialize chart with empty data
+            applyTheme(); // Apply the default theme on load
+        });
+    </script>
+</body>
+</html>
